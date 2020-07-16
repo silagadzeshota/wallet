@@ -39,6 +39,27 @@ public class Database {
 	      sr.runScript(reader);
 	}
 	
+	//retrieves new unused address from database and returns to user (marking address as used)
+	public String GetNewAddress() throws SQLException {
+		// our SQL SELECT query. 
+	    // if you only need a few columns, specify them by name instead of using "*"
+	    String query = "UPDATE addresses set used = true where used = false limit 1 returning address";
+	
+	    // create the java statement
+	    Statement st = conn.createStatement();
+	      
+	    // execute the query, and get a java resultset
+	    ResultSet rs = st.executeQuery(query);
+	      
+        // iterate through the java resultset
+	    String address = null;
+        while (rs.next()){
+        	address = rs.getString("address"); 
+	    }
+	    st.close();
+	    return address;
+	}
+	
 	
 	
 	/* query returns the number of unused addresses that are reserved for further usage*/
@@ -68,7 +89,7 @@ public class Database {
 	public void AddAddress(String address) throws SQLException {
 	    // our SQL SELECT query. 
 	    // if you only need a few columns, specify them by name instead of using "*"
-	    String query = "INSERT INTO addresses(address, used) values('"+ address + "', true)";
+	    String query = "INSERT INTO addresses(address, used) values('"+ address + "', false)";
 	
 	    // create the java statement
 	    Statement st = conn.createStatement();

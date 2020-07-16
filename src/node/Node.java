@@ -46,18 +46,17 @@ public class Node {
     public ArrayList<String> GenerateAddresses(int addressesNum) throws UnsupportedEncodingException, IOException, JSONException {
     	ArrayList<String> result = new ArrayList<String>();
     	for (int k=0; k<addressesNum; k++) {
-    		String jsonResponse = rpc(" --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\",\"method\": \"getnewaddress\", \"params\": []}'" + " -H 'content-type:text/plain;'");
+    		String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"generateaddress\",\"method\": \"getnewaddress\", \"params\": []}");
     		// parsing file "JSONExample.json" 
-    		System.out.println(jsonResponse);
-
+    		JSONObject obj = new JSONObject(jsonResponse);
+    		result.add(obj.getString("result"));
     	}
 		return result;
     }
     
     private String rpc(String rpc_params) throws UnsupportedEncodingException, IOException {
-    	Process process = Runtime.getRuntime().exec("curl -X POST -s -k " + rpc_params +  " http://" +wallet.Config.getInstance().getNodeUser() + ":" + wallet.Config.getInstance().getNodePassword() +"@" + wallet.Config.getInstance().getNodeHost() + ":" + wallet.Config.getInstance().getNodePort());
+    	Process process = Runtime.getRuntime().exec(new String[] {"curl", "-X", "POST", "-s", "-k","-d", rpc_params  ,"http://" +wallet.Config.getInstance().getNodeUser() + ":" + wallet.Config.getInstance().getNodePassword() +"@" + wallet.Config.getInstance().getNodeHost() + ":" + wallet.Config.getInstance().getNodePort()});
     	String rpcResponse = "";
-    	System.out.println("curl -X POST -s -k " + rpc_params +  " http://" +wallet.Config.getInstance().getNodeUser() + ":" + wallet.Config.getInstance().getNodePassword() +"@" + wallet.Config.getInstance().getNodeHost() + ":" + wallet.Config.getInstance().getNodePort());
     	try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"))) {
     	    for (String line; (line = reader.readLine()) != null;) {
     	    	rpcResponse += line;
