@@ -31,12 +31,12 @@ public class Database {
 	}
 	
 	public void InitializeDatabase() {
-		  //Initialize the script runner
-	      ScriptRunner sr = new ScriptRunner(con);
-	      //Creating a reader object
-	      Reader reader = new BufferedReader(new FileReader("E:\\sampleScript.sql"));
-	      //Running the script
-	      sr.runScript(reader);
+//		  //Initialize the script runner
+//	      ScriptRunner sr = new ScriptRunner(con);
+//	      //Creating a reader object
+//	      Reader reader = new BufferedReader(new FileReader("E:\\sampleScript.sql"));
+//	      //Running the script
+//	      sr.runScript(reader);
 	}
 	
 	//retrieves new unused address from database and returns to user (marking address as used)
@@ -61,7 +61,6 @@ public class Database {
 	}
 	
 	
-	
 	/* query returns the number of unused addresses that are reserved for further usage*/
 	public int getUnusedAddresses() throws SQLException {
 	    // our SQL SELECT query. 
@@ -82,6 +81,34 @@ public class Database {
 	    st.close();
 		       
 	    return count;
+	}
+	
+	public boolean IsBlockProcessed(String blockHash) throws SQLException {
+		// our SQL SELECT query. 
+	    // if you only need a few columns, specify them by name instead of using "*"
+	    String query = "SELECT count(*) as count FROM blocks where block_hash = '" + blockHash +"'";
+	
+	    // create the java statement
+	    Statement st = conn.createStatement();
+	      
+	    // execute the query, and get a java resultset
+	    ResultSet rs = st.executeQuery(query);
+	      
+        // iterate through the java resultset
+	    int count = 0;
+        while (rs.next()){
+	      count = rs.getInt("count"); 
+	      if (count == 0) {
+	    	  st.close();
+	    	  return false;
+	      } else {
+	    	  st.close();
+	    	  return true;
+	      }
+	    }
+        
+        return false;
+	    
 	}
 	
 	

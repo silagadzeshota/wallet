@@ -14,15 +14,25 @@ public class Wallet {
 		//parse config file and store parameters
 		Config.getInstance().parseConfig();
 		
+		
+		//initialize database
 		Database database = new Database();
 		database.Connect();
 		
 		
+		//initialize addresses in database and start listening to address usage
 		Address addresses = new Address();
 		addresses.Reserve(database);
 		addresses.start();
 		
+		//start blockchain parsing for receiving deposits and withdraw confirmations
+		blockchain.Parser parser = new blockchain.Parser();
+		parser.start();
+		
 
+		
+		//wait for threads to finish
+		parser.join();
 		addresses.join();
 		
 		

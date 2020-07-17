@@ -54,6 +54,79 @@ public class Node {
 		return result;
     }
     
+    
+    //send transaction to network
+    public String Send(String toAddress, String amount) throws UnsupportedEncodingException, IOException, JSONException {
+    	String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"se\",\"method\": \"sendtoaddress\", \"params\": [\"" + toAddress + "\", " + amount +"]}");
+		// parsing file "JSONExample.json" 
+		JSONObject obj = new JSONObject(jsonResponse);
+		return obj.getString("result");
+    }
+    
+    //validate address to be correct format for testnet bitcoin address
+    public boolean ValidateAddress(String toAddress) throws UnsupportedEncodingException, IOException, JSONException {
+    	String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"se\",\"method\": \"validateaddress\", \"params\": [\"" + toAddress + "\"]}");
+		// parsing file "JSONExample.json" 
+		JSONObject obj = new JSONObject(jsonResponse);
+    	return obj.getJSONObject("result").getBoolean("isvalid");
+    }
+    
+    
+    //returns casino balance that node stores 
+    public Double GetBalance() throws UnsupportedEncodingException, IOException, JSONException {
+    	String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getbalance\", \"params\": []}");
+    	JSONObject obj = new JSONObject(jsonResponse);
+    	return Double.parseDouble(obj.getString("result"));
+    	
+    	
+    }
+    
+    
+    //get last mined block from blockchain
+    public blockchain.Parser.BlockHeader GetLastBlock() throws UnsupportedEncodingException, IOException, JSONException {
+    	//get index first and then index associated block he
+    	String jsonResponse1 = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getblockcount\", \"params\": []}");
+    	JSONObject obj = new JSONObject(jsonResponse1);
+    	String blockIndex = obj.getString("result");
+    	
+    	
+    	//get index first and then index associated block he
+    	String jsonResponse2 = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getblockhash\", \"params\": [\""+ blockIndex + "\"]}");
+    	JSONObject obj2 = new JSONObject(jsonResponse2);
+    	String blockHash = obj2.getString("result");
+    	
+    	return GetBlockHeaderByHash(blockHash);
+    }
+    
+    
+    //returns block header by block hash
+    public blockchain.Parser.BlockHeader GetBlockHeaderByHash(String blockHash) throws UnsupportedEncodingException, IOException, JSONException {
+    	//get index first and then index associated block he
+    	String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getblock\", \"params\": [\""+ blockHash + "\"]}");
+    	JSONObject obj = new JSONObject(jsonResponse);
+    	
+    	blockchain.Parser.BlockHeader blockHeader = new blockchain.Parser().new BlockHeader(obj.getInt("result"), blockHash, obj.getJSONObject("result").getString("previousblockhash"));
+    	return blockHeader;
+    }
+    
+    //returns block transactions
+    public ArrayList<wallet.Transaction> GetBlockTransactions(blockchain.Parser.BlockHeader blockHeader) throws UnsupportedEncodingException, IOException, JSONException {
+    	//get index first and then index associated block he
+    	String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getblock\", \"params\": [\""+ blockHeader.blockHash + "\"]}");
+    	JSONObject obj = new JSONObject(jsonResponse);
+    	JSONArray txArray = obj.getJSONObject("result").getJSONArray("tx");
+    	
+    	
+    	ArrayList<String> txIds = new ArrayList<String>();
+    	//process transactions with transaction id
+    	for (int k=0; k<txArray.length(); k++) {
+    		txIds.add(txArray.get(k).toString());
+    	}
+    	return null;
+    }
+    
+    
+    //main functinn that executes curl command and returns result as a string (json)
     private String rpc(String rpc_params) throws UnsupportedEncodingException, IOException {
     	Process process = Runtime.getRuntime().exec(new String[] {"curl", "-X", "POST", "-s", "-k","-d", rpc_params  ,"http://" +wallet.Config.getInstance().getNodeUser() + ":" + wallet.Config.getInstance().getNodePassword() +"@" + wallet.Config.getInstance().getNodeHost() + ":" + wallet.Config.getInstance().getNodePort()});
     	String rpcResponse = "";
@@ -64,4 +137,6 @@ public class Node {
     	}
 		return rpcResponse;
     }
+    
+    
 }
