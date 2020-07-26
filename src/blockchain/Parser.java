@@ -54,6 +54,7 @@ public class Parser extends Thread{
 				e.printStackTrace();
 				continue;
 			}
+			System.out.println("BHHGGGG");
 			
 			//check if block associated with given hash is processed
 			boolean processed;
@@ -69,13 +70,20 @@ public class Parser extends Thread{
 			boolean success;
 			try {
 				success = ProcessBlock(blockHeader);
-			} catch (IOException | JSONException e) {
+			} catch (IOException | JSONException | SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				continue;
 			}
 			if (!success) {
 				System.out.println("Cannot process block");
+			}
+			
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -87,7 +95,7 @@ public class Parser extends Thread{
 	  canceled (forked) block's transactions and, on the way back, add new transactions for the same block index
 	  but from valid block.
 	*/
-	public boolean ProcessBlock(BlockHeader blockHeader) throws UnsupportedEncodingException, IOException, JSONException {
+	public boolean ProcessBlock(BlockHeader blockHeader) throws UnsupportedEncodingException, IOException, JSONException, SQLException {
 		//first check if previous block is processed if not go back recursively
 		//check if block associated with given hash is processed
 		boolean processed;
@@ -101,20 +109,31 @@ public class Parser extends Thread{
 		
 		//if not processed process previous block
 		if (!processed) {
+			System.out.println("GGGG");
 			BlockHeader prevBlockHeader = node.Node.getInstance().GetBlockHeaderByHash(blockHeader.prevBlockHash);
 			if (!ProcessBlock(prevBlockHeader)) {
 				return false;
 			}
 		}
 		
-		//get block and process native transactions
-		return ProcessTransactions(blockHeader);
+		boolean transactionsProcessed = ProcessTransactions(blockHeader);
+		if (transactionsProcessed == true) {
+			database.NewBlock(blockHeader);
+			return true;
+		} else {
+			return false;
+		}
+		
 	}
 	
 	//processing individual transactions parsed from block with given header
-	public boolean ProcessTransactions(BlockHeader blockHeader) {
+	public boolean ProcessTransactions(BlockHeader blockHeader) throws UnsupportedEncodingException, IOException, JSONException, SQLException {
 		//get block transactions 
 		ArrayList<wallet.Transaction> transactions = node.Node.getInstance().GetBlockTransactions(blockHeader);
+		for (int k=0; k<transactions.size(); k++) {
+			if (database.IsWithdrawTransaction(transactions.get(k))) database.InsertNewTransaction(transactions.get(k), false); 
+			if (database.IsDepositAddress(transactions.get(k))) database.InsertNewTransaction(transactions.get(k), true); 
+		}
 		return true;
 	}
 }

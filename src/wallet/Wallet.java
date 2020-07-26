@@ -26,9 +26,8 @@ public class Wallet {
 		addresses.start();
 		
 		//start blockchain parsing for receiving deposits and withdraw confirmations
-		blockchain.Parser parser = new blockchain.Parser();
+		blockchain.Parser parser = new blockchain.Parser(database);
 		parser.start();
-		
 
 		
 		//wait for threads to finish

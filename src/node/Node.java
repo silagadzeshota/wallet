@@ -87,11 +87,11 @@ public class Node {
     	//get index first and then index associated block he
     	String jsonResponse1 = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getblockcount\", \"params\": []}");
     	JSONObject obj = new JSONObject(jsonResponse1);
-    	String blockIndex = obj.getString("result");
+    	String blockIndex = String.valueOf(obj.getInt("result"));
     	
     	
     	//get index first and then index associated block he
-    	String jsonResponse2 = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getblockhash\", \"params\": [\""+ blockIndex + "\"]}");
+    	String jsonResponse2 = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getblockhash\", \"params\": ["+ blockIndex + "]}");
     	JSONObject obj2 = new JSONObject(jsonResponse2);
     	String blockHash = obj2.getString("result");
     	
@@ -104,8 +104,7 @@ public class Node {
     	//get index first and then index associated block he
     	String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getblock\", \"params\": [\""+ blockHash + "\"]}");
     	JSONObject obj = new JSONObject(jsonResponse);
-    	
-    	blockchain.Parser.BlockHeader blockHeader = new blockchain.Parser().new BlockHeader(obj.getInt("result"), blockHash, obj.getJSONObject("result").getString("previousblockhash"));
+    	blockchain.Parser.BlockHeader blockHeader = new blockchain.Parser().new BlockHeader(obj.getJSONObject("result").getInt("height"), blockHash, obj.getJSONObject("result").getString("previousblockhash"));
     	return blockHeader;
     }
     
@@ -117,12 +116,39 @@ public class Node {
     	JSONArray txArray = obj.getJSONObject("result").getJSONArray("tx");
     	
     	
-    	ArrayList<String> txIds = new ArrayList<String>();
+    	ArrayList<wallet.Transaction> txIds = new ArrayList<wallet.Transaction>();
     	//process transactions with transaction id
     	for (int k=0; k<txArray.length(); k++) {
-    		txIds.add(txArray.get(k).toString());
+    		ProcessTransaction(txArray.get(k).toString(),txIds);
     	}
-    	return null;
+    
+    	return txIds;
+    }
+    
+    
+    //obtains transaction inner data from txid
+    private void ProcessTransaction(String txid, ArrayList<wallet.Transaction> txIds) throws UnsupportedEncodingException, IOException {
+    	//get index first and then index associated block he
+    	String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getrawtransaction\", \"params\": [\""+ txid + "\", true]}");
+    	JSONObject obj;
+		try {
+			obj = new JSONObject(jsonResponse);
+			JSONObject result = obj.getJSONObject("result");
+	    	if (result.getJSONArray("vout") != null) {
+	    		//process transactions with transaction id
+	        	for (int k=0; k<result.getJSONArray("vout").length(); k++) {
+	        		JSONObject transfer = (JSONObject) result.getJSONArray("vout").get(k);
+	        		if (!transfer.getJSONObject("scriptPubKey").has("addresses")) continue;
+	        		txIds.add(new wallet.Transaction(transfer.getJSONObject("scriptPubKey").getJSONArray("addresses").get(0).toString(), String.valueOf(transfer.getDouble("value")), txid));
+	        	}
+	        
+	    	}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+
     }
     
     

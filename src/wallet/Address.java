@@ -59,7 +59,6 @@ public class Address extends Thread {
 	
 	public void run() {
 		//fill addresses when used from database
-		System.out.println("asdasdasdas");
 		while (true) {
 			
 			lock.lock();

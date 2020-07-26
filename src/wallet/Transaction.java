@@ -2,16 +2,20 @@ package wallet;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
 
 import org.json.JSONException;
 
 public class Transaction {
 	
 	//address to where transaction is sent 
-	private String toAddress = null;
+	public String toAddress = null;
 	
 	//amount to be transfered
-	private String amount;
+	public String amount;
+	
+	//tx id in blockchain
+	public String transactionId;
 	
 	//mark transaction as processed
 	private boolean processed = false;
@@ -19,6 +23,13 @@ public class Transaction {
 	public Transaction(String toAddress, String amount) {
 		this.toAddress = toAddress;
 		this.amount = amount;
+	}
+	
+	
+	public Transaction(String toAddress, String amount, String txid) {
+		this.toAddress = toAddress;
+		this.amount = amount;
+		this.transactionId = txid;
 	}
 	
 	
@@ -37,7 +48,7 @@ public class Transaction {
 	
 	
 	//make transfer using rpc node to send transaction into network
-	public String send(database.Database database) throws UnsupportedEncodingException, IOException, JSONException {
+	public String send(database.Database database) throws  IOException, JSONException, SQLException {
 		//check transaction status
 		if (processed) return "processed";
 		
@@ -51,7 +62,12 @@ public class Transaction {
 		processed = true;
 		
 		//finally send transaction to network
-		return node.Node.getInstance().Send(toAddress, amount);
+		this.transactionId = node.Node.getInstance().Send(toAddress, amount);
 		
+		
+		//save as withdraw transaction to know during parsing
+		if (this.transactionId != null) database.SaveWithdraw(this, this.transactionId);
+		
+		return this.transactionId;
 	}
 }

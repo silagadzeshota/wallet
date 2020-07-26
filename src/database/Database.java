@@ -61,6 +61,103 @@ public class Database {
 	}
 	
 	
+	//check if transacation is that we requested when withdrawing
+	public boolean IsWithdrawTransaction(wallet.Transaction transaction) throws SQLException {
+		// our SQL SELECT query. 
+	    // if you only need a few columns, specify them by name instead of using "*"
+	    String query = "SELECT count(*) as count FROM withdraws where transaction_id='" + transaction.transactionId+"' and address = '" + transaction.toAddress + "'";
+	
+	    // create the java statement
+	    Statement st = conn.createStatement();
+	      
+	    // execute the query, and get a java resultset
+	    ResultSet rs = st.executeQuery(query);
+	      
+        // iterate through the java resultset
+	    int count = 0;
+        while (rs.next()){
+	      count = rs.getInt("count"); 
+	    }
+	    st.close();
+	    
+	    if (count == 1) return true; 
+	    
+		       
+	    return false;
+	}
+	
+	
+	//save withdraw to know during parsing that it's our withdraw transaction
+	public void SaveWithdraw(wallet.Transaction transaction,String withdrawId) throws SQLException {
+		// our SQL SELECT query. 
+	    // if you only need a few columns, specify them by name instead of using "*"
+	    String query = "INSERT INTO withdraws(address, amount, transaction_id) values('"+ transaction.toAddress + "'," + transaction.amount+ ", '" +transaction.transactionId + "')";
+	
+	    // create the java statement
+	    Statement st = conn.createStatement();
+	      
+	    // execute the query, and get a java resultset
+	    st.execute(query);
+	    st.close(); 
+	}
+	
+	//save new processed block
+	public void NewBlock(blockchain.Parser.BlockHeader blockHeader) throws SQLException {
+		// our SQL SELECT query. 
+	    // if you only need a few columns, specify them by name instead of using "*"
+	    String query = "INSERT INTO blocks(block_hash, prev_block_hash, block_height) values('"+ blockHeader.blockHash+ "','" + blockHeader.prevBlockHash+ "', " +blockHeader.blockHeight + ")";
+	
+	    // create the java statement
+	    Statement st = conn.createStatement();
+	      
+	    // execute the query, and get a java resultset
+	    st.execute(query);
+	    st.close(); 
+	}
+	
+	
+	//cecking for deposit address if exists
+	public boolean IsDepositAddress(wallet.Transaction transaction) throws SQLException {
+		// our SQL SELECT query. 
+	    // if you only need a few columns, specify them by name instead of using "*"
+	    String query = "SELECT count(*) as count FROM addresses where address='" + transaction.toAddress+"' and used = true";
+	
+	    // create the java statement
+	    Statement st = conn.createStatement();
+	      
+	    // execute the query, and get a java resultset
+	    ResultSet rs = st.executeQuery(query);
+	      
+        // iterate through the java resultset
+	    int count = 0;
+        while (rs.next()){
+	      count = rs.getInt("count"); 
+	    }
+	    st.close();
+	    
+	    if (count == 1) return true; 
+	    
+		       
+	    return false;
+	}
+	
+	//insert new native transaction
+	public void InsertNewTransaction(wallet.Transaction transaction, boolean deposit) throws SQLException {
+		 // our SQL SELECT query. 
+	    // if you only need a few columns, specify them by name instead of using "*"
+		String deposittx  = "";
+		if (deposit) deposittx = "true"; else deposittx = "false";
+	    String query = "INSERT INTO transactions(address, amount, transaction_id, is_deposit) values('"+ transaction.toAddress + "'," + transaction.amount+ ", '" +transaction.transactionId + "', " + deposittx+ ")";
+	
+	    // create the java statement
+	    Statement st = conn.createStatement();
+	      
+	    // execute the query, and get a java resultset
+	    st.execute(query);
+	    st.close(); 
+	}
+	
+	
 	/* query returns the number of unused addresses that are reserved for further usage*/
 	public int getUnusedAddresses() throws SQLException {
 	    // our SQL SELECT query. 

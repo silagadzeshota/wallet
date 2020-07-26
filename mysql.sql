@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS transactions(
 	id int auto_increment,
     primary key(id),
 	address VARCHAR(64), 
-	amount bigint,
+	amount VARCHAR(64),
+	transaction_id VARCHAR(128),
 	is_deposit boolean,
  	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
  	)
@@ -32,11 +33,12 @@ CREATE TABLE IF NOT EXISTS blocks (
 
 
 /* currently parsed blocks which contain transactions that are extracted and processed */ 
-CREATE TABLE IF NOT EXISTS blocks (
+CREATE TABLE IF NOT EXISTS withdraws (
 	id int auto_increment,
     primary key(id),    
-    prev_block_hash varchar(256) NOT NULL,
-    block_height bigint NOT NULL,
+    address VARCHAR(64), 
+    amount VARCHAR(64), 
+    transaction_id VARCHAR(128),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
