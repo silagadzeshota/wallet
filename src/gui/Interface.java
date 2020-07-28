@@ -1,0 +1,80 @@
+package gui;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Box;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+
+public class Interface extends JFrame {
+	private JTextArea text1;
+	private JTextArea text2;
+	private JCheckBox autoCheck;
+	 
+	public Interface() {
+		super("Sudoku Solver");
+		setVisible(true);
+		JFrame f = new JFrame("Table Example");  
+        String data[][]={ {"101","Amit","670000"},    
+                                                                   {"102","Jai","780000"},    
+                                                                   {"101","Sachin","700000"}};    
+                        String column[]={"ID","NAME","SALARY"};         
+                        final JTable jt=new JTable(data,column);    
+        jt.setCellSelectionEnabled(true);  
+        ListSelectionModel select= jt.getSelectionModel();  
+        select.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);  
+        select.addListSelectionListener(new ListSelectionListener() {  
+          public void valueChanged(ListSelectionEvent e) {  
+            String Data = null;  
+            int[] row = jt.getSelectedRows();  
+            int[] columns = jt.getSelectedColumns();  
+            for (int i = 0; i < row.length; i++) {  
+              for (int j = 0; j < columns.length; j++) {  
+                Data = (String) jt.getValueAt(row[i], columns[j]);  
+              } }  
+            System.out.println("Table element selected is: " + Data);    
+          }       
+        });  
+        JScrollPane sp=new JScrollPane(jt);    
+        f.add(sp);  
+        f.setSize(300, 200);  
+        f.setVisible(true);  
+	}
+	//creating the state to solve the puzzle if the autocheck is selected...
+		//the part was written with the help of friend
+		class text1Listener implements DocumentListener{
+			 public void insertUpdate(DocumentEvent e) {
+
+			    	if (autoCheck.isSelected()) {
+			    	}
+			    }
+			    
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+		}
+		
+}

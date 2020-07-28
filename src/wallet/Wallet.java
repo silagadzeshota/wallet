@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import org.json.JSONException;
 
 import database.Database;
+import gui.Interface;
 
 public class Wallet {
 
@@ -28,7 +29,7 @@ public class Wallet {
 		//start blockchain parsing for receiving deposits and withdraw confirmations
 		blockchain.Parser parser = new blockchain.Parser(database);
 		parser.start();
-
+		Interface frame = new Interface();
 		
 		//wait for threads to finish
 		parser.join();

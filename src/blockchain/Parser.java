@@ -54,7 +54,6 @@ public class Parser extends Thread{
 				e.printStackTrace();
 				continue;
 			}
-			System.out.println("BHHGGGG");
 			
 			//check if block associated with given hash is processed
 			boolean processed;
@@ -113,6 +112,8 @@ public class Parser extends Thread{
 			BlockHeader prevBlockHeader = node.Node.getInstance().GetBlockHeaderByHash(blockHeader.prevBlockHash);
 			if (!ProcessBlock(prevBlockHeader)) {
 				return false;
+			} else {
+				System.out.println(prevBlockHeader.blockHash);
 			}
 		}
 		
