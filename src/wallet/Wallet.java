@@ -27,10 +27,11 @@ public class Wallet {
 		addresses.start();
 		
 		//start blockchain parsing for receiving deposits and withdraw confirmations
-		blockchain.Parser parser = new blockchain.Parser(database);
+		Interface frame = new Interface(addresses, database);
+		blockchain.Parser parser = new blockchain.Parser(database,frame);
+		frame.UpdateTransactions(database.GetTransactions());
 		parser.start();
-		Interface frame = new Interface(addresses);
-		
+
 		//wait for threads to finish
 		parser.join();
 		addresses.join();

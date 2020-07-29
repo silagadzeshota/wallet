@@ -1,10 +1,12 @@
 package database;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
 
 import wallet.Config;
@@ -41,22 +43,37 @@ public class Database {
 	
 	//retrieves new unused address from database and returns to user (marking address as used)
 	public String GetNewAddress() throws SQLException {
-		// our SQL SELECT query. 
+		
+		 // our SQL SELECT query. 
 	    // if you only need a few columns, specify them by name instead of using "*"
-	    String query = "UPDATE addresses set used = true where used = false limit 1 returning address";
+	    String query2 = "SELECT address FROM addresses where used= false limit 1";
 	
 	    // create the java statement
-	    Statement st = conn.createStatement();
+	    Statement st2 = conn.createStatement();
 	      
 	    // execute the query, and get a java resultset
-	    boolean rs = st.execute(query);
+	    ResultSet rs = st2.executeQuery(query2);
 	      
         // iterate through the java resultset
 	    String address = null;
         while (rs.next()){
         	address = rs.getString("address"); 
 	    }
+        st2.close();
+        
+		// our SQL SELECT query. 
+	    // if you only need a few columns, specify them by name instead of using "*"
+	    String query = "UPDATE addresses set used = true where address = '" + address + "'";
+	
+	    // create the java statement
+	    Statement st = conn.createStatement();
+	      
+	    // execute the query, and get a java resultset
+	    st.execute(query);
+	      
+       
 	    st.close();
+	    
 	    return address;
 	}
 	
@@ -101,6 +118,7 @@ public class Database {
 	    st.close(); 
 	}
 	
+	
 	//save new processed block
 	public void NewBlock(blockchain.Parser.BlockHeader blockHeader) throws SQLException {
 		// our SQL SELECT query. 
@@ -140,6 +158,27 @@ public class Database {
 		       
 	    return false;
 	}
+	
+	//cecking for deposit address if exists
+		public ArrayList<wallet.Transaction> GetTransactions() throws SQLException {
+			// our SQL SELECT query. 
+		    // if you only need a few columns, specify them by name instead of using "*"
+		    String query = "SELECT transaction_id, address, amount, is_deposit FROM transactions";
+		    ArrayList<wallet.Transaction> transactions = new ArrayList<wallet.Transaction>();
+		    // create the java statement
+		    Statement st = conn.createStatement();
+		      
+		    // execute the query, and get a java resultset
+		    ResultSet rs = st.executeQuery(query);
+		      
+	        // iterate through the java resultset
+	        while (rs.next()){
+	        	transactions.add(new wallet.Transaction(rs.getString("address"), rs.getString("amount"), rs.getString("transaction_id")));
+		    }
+		    st.close();
+		    
+		    return transactions;
+		}
 	
 	//insert new native transaction
 	public void InsertNewTransaction(wallet.Transaction transaction, boolean deposit) throws SQLException {

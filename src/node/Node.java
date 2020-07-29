@@ -76,9 +76,7 @@ public class Node {
     public Double GetBalance() throws UnsupportedEncodingException, IOException, JSONException {
     	String jsonResponse = rpc("{\"jsonrpc\": \"1.0\", \"id\":\"balance\",\"method\": \"getbalance\", \"params\": []}");
     	JSONObject obj = new JSONObject(jsonResponse);
-    	return Double.parseDouble(obj.getString("result"));
-    	
-    	
+    	return obj.getDouble("result");
     }
     
     

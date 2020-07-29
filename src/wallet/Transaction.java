@@ -54,9 +54,14 @@ public class Transaction {
 		
 		//check that balance is sufficient
 		Double balance = node.Node.getInstance().GetBalance();
-		
+		if (this.amount == null || amount == "" || amount.isEmpty()) return "Incorrect amount format";
+		if (toAddress == null || toAddress == "" || toAddress.isEmpty()) return "Incorrect address";
 		//check format;
 		double amountDouble = Double.parseDouble(amount);
+		
+		System.out.println(balance.toString());
+		System.out.println(amountDouble);
+		if (balance < amountDouble) return "Not enough balance";
 
 		//mark transaction as processed
 		processed = true;

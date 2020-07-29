@@ -11,6 +11,7 @@ public class Parser extends Thread{
 	
 	//current database parser works on
 	database.Database database = null;
+	gui.Interface frame = null;
 	
 	//for checking current last block in blockchain
 	public class BlockHeader{
@@ -36,11 +37,11 @@ public class Parser extends Thread{
 	}
 	
 	//create initializing constructors
-	public Parser(database.Database database) {
+	public Parser(database.Database database, gui.Interface frame) {
 		this.database = database;
+		this.frame = frame;
 	}
 	public Parser() {
-		this.database = database;
 	}
 	
 	public void run() {
@@ -108,23 +109,25 @@ public class Parser extends Thread{
 		
 		//if not processed process previous block
 		if (!processed) {
-			System.out.println("GGGG");
+			System.out.println("Processing new block");
 			BlockHeader prevBlockHeader = node.Node.getInstance().GetBlockHeaderByHash(blockHeader.prevBlockHash);
 			if (!ProcessBlock(prevBlockHeader)) {
 				return false;
 			} else {
 				System.out.println(prevBlockHeader.blockHash);
 			}
-		}
 		
-		boolean transactionsProcessed = ProcessTransactions(blockHeader);
-		if (transactionsProcessed == true) {
-			database.NewBlock(blockHeader);
-			return true;
-		} else {
-			return false;
-		}
+			boolean transactionsProcessed = ProcessTransactions(blockHeader);
+			if (transactionsProcessed == true) {
+				database.NewBlock(blockHeader);
+				frame.UpdateTransactions(database.GetTransactions());
+				return true;
+			} else {
+				return false;
+			}
 		
+		}
+		return true;
 	}
 	
 	//processing individual transactions parsed from block with given header
@@ -132,6 +135,8 @@ public class Parser extends Thread{
 		//get block transactions 
 		ArrayList<wallet.Transaction> transactions = node.Node.getInstance().GetBlockTransactions(blockHeader);
 		for (int k=0; k<transactions.size(); k++) {
+			System.out.println(transactions.get(k).toAddress);
+			System.out.println(transactions.get(k).amount);
 			if (database.IsWithdrawTransaction(transactions.get(k))) database.InsertNewTransaction(transactions.get(k), false); 
 			if (database.IsDepositAddress(transactions.get(k))) database.InsertNewTransaction(transactions.get(k), true); 
 		}

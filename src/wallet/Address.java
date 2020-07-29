@@ -53,7 +53,9 @@ public class Address extends Thread {
 	//returning new address from database
 	public final String GetAddress() throws SQLException {
 		String address = database.GetNewAddress();
+		lock.lock();
 		addressSignal.signal();
+		lock.unlock();
 		return address;
 	}
 	

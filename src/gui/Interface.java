@@ -7,7 +7,9 @@ import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -21,6 +23,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
+import org.json.JSONException;
 
 
 
@@ -31,41 +36,88 @@ public class Interface extends JFrame {
 	
 	//table initial contant
 	JTable jt;
-	String data[][]={{"jasdnpqwdjqpwjqpwoej","2.3","Withdraw"},    
-            {"1asdknw;kenqwe;;qw","1.3", "Deposit"}};    
-    String column[]={"Address","Amount", "Type"};  
+	String data[][]={};    
+    String column[]={"Tx","Amount", "Type"};  
  // Private variables of the GUI components
     JTextField tField;
     JTextField pwField;
     JTextArea tArea;
     JFormattedTextField formattedField;
-    JLabel depositAddress;
+    JTextField depositAddress;
+    JLabel message;
+    database.Database database = null;
+    DefaultTableModel model;
     
     wallet.Address address;
-	public Interface(wallet.Address addresss) throws SQLException {
+	public Interface(wallet.Address addresss, database.Database database) throws SQLException {
 		  super("");
 		  this.address = addresss;
+		  this.database = database;
+		  
 	      setVisible(true);
 	      // JPanel for the text fields
-		  JPanel panel= new JPanel(new GridLayout(3, 2, 10, 2));
+		  JPanel panel= new JPanel(new GridLayout(5, 2, 10, 2));
 		  panel.setBorder(BorderFactory.createTitledBorder("Make Withdraw: "));
 	      // Regular text field (Row 1)
 	      panel.add(new JLabel("  Address: "));
 	      tField = new JTextField(10);
 	      panel.add(tField);
 	 
-	      depositAddress = new JLabel("Deposit: " + address.GetAddress());
-	 
+	     // panel.add(depositAddress);
 	      // Password field (Row 2)
 	      panel.add(new JLabel("  Amount: "));
-	      pwField = new JPasswordField(10);
+	      pwField = new JTextField(10);
 	      panel.add(pwField);
 	     
 	      // Formatted text field (Row 3)
-	      panel.add(new JButton("Send"));
+	      JButton send = new JButton("Send");
+	      send.addActionListener(new ActionListener(){  
+	    	  public void actionPerformed(ActionEvent e){  
+	    		 wallet.Transaction transaction = new wallet.Transaction(tField.getText(), pwField.getText());
+	    		 tField.setText("");
+	    		 pwField.setText("");
+	    		 try {
+	    			 String result = transaction.send(database);
+	    			 if (result == "Success!") {
+	    				 message.setText(result);
+	    				 message.setForeground(Color.GREEN);
+	    			 } else {
+	    				 message.setText(result);
+	    				 message.setForeground(Color.RED);
+	    			 }
+				} catch (IOException | JSONException | SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+	          }  
+	      });
+	      panel.add(send);
+	      // Formatted text field (Row 3)
 	      
+	      panel.add(new JLabel("Deposit Address: "));
+	      depositAddress = new JTextField(address.GetAddress());
+	      depositAddress.setEditable(false);
+	      JButton j = new JButton("New Deposit Address");
+	      j.addActionListener(new ActionListener(){  
+	    	  public void actionPerformed(ActionEvent e){  
+	    		  try {
+					depositAddress.setText(address.GetAddress());
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+	          }  
+	      });
+	      message = new JLabel("");
+
+	      panel.add(j);
+	      panel.add(depositAddress);
+	      panel.add(message);
+
 	      // Create a JTextArea
-	      jt = new JTable(data, column);
+	      model = new DefaultTableModel(data,column);
+	      jt = new JTable(model);
+	      
 	      jt.setBackground(new Color(204, 238, 241)); // light blue
 	      // Wrap the JTextArea inside a JScrollPane
 	      JScrollPane tAreaScrollPane = new JScrollPane(jt);
@@ -77,7 +129,6 @@ public class Interface extends JFrame {
 	      cp.setLayout(new BorderLayout(5, 5));
 	      cp.add(panel, BorderLayout.NORTH);
 	      cp.add(tAreaScrollPane, BorderLayout.CENTER);
-	 
 	      setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	      setTitle("BTC Wallet");
 	      setSize(350, 350);
@@ -92,6 +143,20 @@ public class Interface extends JFrame {
 	public void AddTransaction(wallet.Transaction transaction) {
 		jt.setValueAt(transaction.toAddress, jt.getRowCount(), 0);
 		jt.setValueAt(transaction.amount, jt.getRowCount(), jt.getColumnCount());
+	}
+	
+	public void UpdateTransactions(ArrayList<wallet.Transaction> transactions) throws SQLException {
+		jt.removeAll();
+		DefaultTableModel model = (DefaultTableModel) jt.getModel();
+		for (int k=0;k<transactions.size(); k++) {
+			
+			if (database.IsDepositAddress(transactions.get(k))) {
+				model.insertRow(0, new Object[]{transactions.get(k).toAddress, transactions.get(k).amount, "Deposit"});
+			} else {
+				model.insertRow(0, new Object[]{transactions.get(k).toAddress, transactions.get(k).amount, "Withdraw"});
+			}
+		}
+		
 	}
 	
 }
