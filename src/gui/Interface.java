@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -45,11 +46,13 @@ public class Interface extends JFrame {
     JFormattedTextField formattedField;
     JTextField depositAddress;
     JLabel message;
+    JLabel balance;
     database.Database database = null;
+    
     DefaultTableModel model;
     
     wallet.Address address;
-	public Interface(wallet.Address addresss, database.Database database) throws SQLException {
+	public Interface(wallet.Address addresss, database.Database database) throws SQLException, UnsupportedEncodingException, IOException, JSONException {
 		  super("");
 		  this.address = addresss;
 		  this.database = database;
@@ -109,10 +112,11 @@ public class Interface extends JFrame {
 	          }  
 	      });
 	      message = new JLabel("");
-
+	      balance = new JLabel("Balance: " + node.Node.getInstance().GetBalance().toString());
 	      panel.add(j);
 	      panel.add(depositAddress);
 	      panel.add(message);
+	      panel.add(balance);
 
 	      // Create a JTextArea
 	      model = new DefaultTableModel(data,column);
@@ -145,7 +149,7 @@ public class Interface extends JFrame {
 		jt.setValueAt(transaction.amount, jt.getRowCount(), jt.getColumnCount());
 	}
 	
-	public void UpdateTransactions(ArrayList<wallet.Transaction> transactions) throws SQLException {
+	public void UpdateTransactions(ArrayList<wallet.Transaction> transactions) throws SQLException, UnsupportedEncodingException, IOException, JSONException {
 		jt.removeAll();
 		DefaultTableModel model = (DefaultTableModel) jt.getModel();
 		for (int k=0;k<transactions.size(); k++) {
@@ -156,6 +160,7 @@ public class Interface extends JFrame {
 				model.insertRow(0, new Object[]{transactions.get(k).toAddress, transactions.get(k).amount, "Withdraw"});
 			}
 		}
+		balance.setText("Balance: " + node.Node.getInstance().GetBalance().toString());
 		
 	}
 	
