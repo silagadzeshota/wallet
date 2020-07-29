@@ -150,7 +150,8 @@ public class Interface extends JFrame {
 	}
 	
 	public void UpdateTransactions(ArrayList<wallet.Transaction> transactions) throws SQLException, UnsupportedEncodingException, IOException, JSONException {
-		jt.removeAll();
+		int count = jt.getRowCount();
+		for(int k=0;k<count;k++) jt.removeRowSelectionInterval(0, count-1);
 		DefaultTableModel model = (DefaultTableModel) jt.getModel();
 		for (int k=0;k<transactions.size(); k++) {
 			
