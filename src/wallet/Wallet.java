@@ -29,7 +29,7 @@ public class Wallet {
 		//start blockchain parsing for receiving deposits and withdraw confirmations
 		blockchain.Parser parser = new blockchain.Parser(database);
 		parser.start();
-		Interface frame = new Interface();
+		Interface frame = new Interface(addresses);
 		
 		//wait for threads to finish
 		parser.join();

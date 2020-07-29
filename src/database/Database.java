@@ -49,7 +49,7 @@ public class Database {
 	    Statement st = conn.createStatement();
 	      
 	    // execute the query, and get a java resultset
-	    ResultSet rs = st.executeQuery(query);
+	    boolean rs = st.execute(query);
 	      
         // iterate through the java resultset
 	    String address = null;
